@@ -144,29 +144,80 @@ export default function Dashboard({ user, onLogout }) {
 
         {/* Referral Bonus Banner */}
         <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border-4 border-green-600 rounded-3xl p-6 mb-6 shadow-lg" data-testid="referral-card">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <img 
-                src="https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/2132c09d2ead36dccbd4545fc18ec9709c58b1d4e11c8a875fa87c83f701f67f.png" 
-                alt="Bonus" 
-                className="w-20 h-20 object-contain"
-              />
-              <div>
-                <h3 className="text-3xl font-bold text-red-600 mb-1">R$ 10,00</h3>
-                <p className="text-sm text-gray-700 font-medium">
-                  Indique amigos e ganhe R$ 10 no<br/>primeiro depósito de R$ 30!
-                </p>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <img 
+                  src="https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/2132c09d2ead36dccbd4545fc18ec9709c58b1d4e11c8a875fa87c83f701f67f.png" 
+                  alt="Bonus" 
+                  className="w-20 h-20 object-contain"
+                />
+                <div>
+                  <h3 className="text-3xl font-bold text-red-600 mb-1">R$ 10,00</h3>
+                  <p className="text-sm text-gray-700 font-medium">
+                    Indique amigos e ganhe R$ 10 no<br/>primeiro depósito de R$ 30!
+                  </p>
+                </div>
               </div>
             </div>
+            
+            {/* Share Buttons */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button
+                onClick={() => {
+                  const message = `🌾 Wealth Farm - Invista no Agronegócio!\n\nGanhe rendimentos investindo no campo! 💰\n\n${referralLink}`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+                data-testid="share-whatsapp-btn"
+              >
+                <span>📱</span> WhatsApp
+              </button>
+              
+              <button
+                onClick={() => {
+                  const message = `🌾 Wealth Farm - Invista no Agronegócio!\n\nGanhe rendimentos investindo no campo! 💰\n\n${referralLink}`;
+                  window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`, '_blank');
+                }}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+                data-testid="share-telegram-btn"
+              >
+                <span>✈️</span> Telegram
+              </button>
+              
+              <button
+                onClick={() => {
+                  const subject = 'Convite Wealth Farm - Invista e Ganhe!';
+                  const body = `Olá!\n\nConheça a Wealth Farm - plataforma de investimentos no agronegócio brasileiro!\n\n🌾 3 pacotes de investimento\n💰 Rendimento por hora\n📈 Sistema de indicação\n💵 Saques via PIX\n\nCadastre-se agora:\n${referralLink}\n\nAproveite!`;
+                  window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+                data-testid="share-email-btn"
+              >
+                <span>📧</span> Email
+              </button>
+              
+              <button
+                onClick={() => {
+                  const message = `Wealth Farm - Invista e ganhe! ${referralLink}`;
+                  window.open(`sms:?body=${encodeURIComponent(message)}`, '_blank');
+                }}
+                className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+                data-testid="share-sms-btn"
+              >
+                <span>💬</span> SMS
+              </button>
+            </div>
+            
             <button
               onClick={() => {
                 navigator.clipboard.writeText(referralLink);
                 toast.success('Link copiado!');
               }}
-              className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"
+              className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold"
               data-testid="copy-referral-btn"
             >
-              Compartilhar
+              📋 Copiar Link
             </button>
           </div>
         </div>

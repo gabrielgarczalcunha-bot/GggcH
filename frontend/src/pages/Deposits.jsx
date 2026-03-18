@@ -8,10 +8,14 @@ import { toast } from 'sonner';
 import BottomNav from '@/components/BottomNav';
 import { Copy, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { uploadImage, compressImage } from '@/utils/uploadImage';
 
 export default function Deposits({ user, onLogout }) {
   const [amount, setAmount] = useState('');
   const [proofUrl, setProofUrl] = useState('');
+  const [proofFile, setProofFile] = useState(null);
+  const [proofPreview, setProofPreview] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [deposits, setDeposits] = useState([]);
   const [pixConfig, setPixConfig] = useState({ pix_code: '', recipient_name: '' });
   const [loading, setLoading] = useState(false);
@@ -41,6 +45,32 @@ export default function Deposits({ user, onLogout }) {
     }
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        toast.error('Arquivo muito grande. Máximo 5MB');
+        return;
+      }
+      
+      // Comprimir se necessário
+      let processedFile = file;
+      if (file.size > 1 * 1024 * 1024) { // Se maior que 1MB, comprimir
+        toast.info('Comprimindo imagem...');
+        processedFile = await compressImage(file);
+      }
+      
+      setProofFile(processedFile);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProofPreview(reader.result);
+      };
+      reader.readAsDataURL(processedFile);
+    }
+  };
+
   const handleShowPixCode = () => {
     if (!amount || parseFloat(amount) <= 0) {
       toast.error('Digite um valor válido');
@@ -54,13 +84,31 @@ export default function Deposits({ user, onLogout }) {
     setLoading(true);
 
     try {
+      let finalProofUrl = proofUrl;
+      
+      // If user uploaded a file, upload it first
+      if (proofFile) {
+        toast.info('Fazendo upload da imagem...');
+        finalProofUrl = await uploadImage(proofFile, setUploadProgress);
+      }
+      
+      if (!finalProofUrl) {
+        toast.error('Por favor, envie o comprovante');
+        setLoading(false);
+        return;
+      }
+
       await api.post('/deposits/request', {
         amount: parseFloat(amount),
-        proof_image_url: proofUrl
+        proof_image_url: finalProofUrl
       });
+      
       toast.success('Solicitação de depósito enviada!');
       setAmount('');
       setProofUrl('');
+      setProofFile(null);
+      setProofPreview('');
+      setUploadProgress(0);
       setShowPixCode(false);
       fetchDeposits();
     } catch (error) {
@@ -143,22 +191,75 @@ export default function Deposits({ user, onLogout }) {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="proof" className="text-gray-700">Link do Comprovante</Label>
-                  <Input
-                    id="proof"
-                    data-testid="proof-input"
-                    type="url"
-                    placeholder="Cole o link da imagem do comprovante"
-                    value={proofUrl}
-                    onChange={(e) => setProofUrl(e.target.value)}
-                    required
-                    className="border-green-300"
-                  />
-                  <p className="text-xs text-gray-500">Upload em: imgur.com, imgbb.com, etc</p>
+                  <Label className="text-gray-700 font-semibold">Escolha o Comprovante</Label>
+                  
+                  {/* File Upload */}
+                  <div className="border-2 border-dashed border-green-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                    <input
+                      type="file"
+                      id="proofFile"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <label htmlFor="proofFile" className="cursor-pointer">
+                      <div className="mb-3">
+                        {proofPreview ? (
+                          <img src={proofPreview} alt="Preview" className="max-h-40 mx-auto rounded" />
+                        ) : (
+                          <div className="text-6xl mb-2">📸</div>
+                        )}
+                      </div>
+                      <p className="text-gray-700 font-medium mb-1">
+                        {proofFile ? proofFile.name : 'Clique para escolher ou tirar foto'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG até 5MB
+                      </p>
+                    </label>
+                  </div>
+                  
+                  {/* OR Separator */}
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 border-t border-gray-300"></div>
+                    <span className="text-gray-500 text-sm">OU</span>
+                    <div className="flex-1 border-t border-gray-300"></div>
+                  </div>
+                  
+                  {/* URL Input */}
+                  <div>
+                    <Label htmlFor="proof" className="text-gray-700">Link do Comprovante</Label>
+                    <Input
+                      id="proof"
+                      data-testid="proof-input"
+                      type="url"
+                      placeholder="Cole o link da imagem do comprovante"
+                      value={proofUrl}
+                      onChange={(e) => setProofUrl(e.target.value)}
+                      className="border-green-300"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Opcional: Se já tiver o link (imgur, imgbb, etc)</p>
+                  </div>
                 </div>
+                
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Enviando...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full transition-all"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (!proofFile && !proofUrl)}
                   className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 h-12 font-bold"
                   data-testid="submit-deposit-btn"
                 >
