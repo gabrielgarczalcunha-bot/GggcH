@@ -69,7 +69,7 @@ export default function Register({ onLogin }) {
                   id="phone"
                   data-testid="phone-input"
                   type="tel"
-                  placeholder="51920020786"
+                  placeholder="Digite seu telefone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required

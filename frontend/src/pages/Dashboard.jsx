@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '@/App';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Wallet, TrendingUp, Users, ShoppingBag, Menu, X, Home, Package, DollarSign, LogOut, User as UserIcon, Shield } from 'lucide-react';
-import Navigation from '@/components/Navigation';
+import { Wallet, TrendingUp, Users, ShoppingBag, DollarSign, LogOut, User as UserIcon, Shield } from 'lucide-react';
 
 export default function Dashboard({ user, onLogout }) {
   const [balance, setBalance] = useState(0);
@@ -58,129 +58,207 @@ export default function Dashboard({ user, onLogout }) {
   const referralLink = `${window.location.origin}/register/${referralStats.referral_code}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-100">
-      <Navigation user={user} onLogout={onLogout} />
-      
-      <div className="max-w-7xl mx-auto px-4 py-8" data-testid="dashboard-container">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-emerald-900 mb-2">Bem-vindo ao Wealth Farm</h1>
-          <p className="text-lg text-emerald-700">Gerencie seus investimentos e acompanhe seus ganhos</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="border-emerald-200 shadow-lg hover:shadow-xl transition-shadow" data-testid="balance-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-700">Saldo Disponível</CardTitle>
-              <Wallet className="h-5 w-5 text-emerald-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-900">R$ {balance.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-emerald-200 shadow-lg hover:shadow-xl transition-shadow" data-testid="invested-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-700">Total Investido</CardTitle>
-              <ShoppingBag className="h-5 w-5 text-emerald-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-900">R$ {totalInvested.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-emerald-200 shadow-lg hover:shadow-xl transition-shadow" data-testid="earnings-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-700">Rendimentos Ativos</CardTitle>
-              <TrendingUp className="h-5 w-5 text-emerald-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-900">R$ {totalCurrentEarnings.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-emerald-200 shadow-lg hover:shadow-xl transition-shadow" data-testid="referrals-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-700">Indicações</CardTitle>
-              <Users className="h-5 w-5 text-emerald-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-900">{referralStats.total_referrals}</div>
-              <p className="text-xs text-emerald-600 mt-1">R$ {referralStats.total_earnings.toFixed(2)} ganhos</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Referral Link */}
-        <Card className="mb-8 border-emerald-200 shadow-lg" data-testid="referral-card">
-          <CardHeader>
-            <CardTitle className="text-emerald-900">Seu Link de Indicação</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-emerald-700 mb-3">
-              Convide amigos e ganhe R$ 10,00 quando eles fizerem o primeiro depósito de R$ 30,00 ou mais!
-            </p>
-            <div className="flex gap-2">
-              <Input 
-                value={referralLink} 
-                readOnly 
-                className="flex-1 border-emerald-300 bg-emerald-50"
-                data-testid="referral-link-input"
-              />
-              <Button 
-                onClick={() => {
-                  navigator.clipboard.writeText(referralLink);
-                  toast.success('Link copiado!');
-                }}
-                className="bg-emerald-600 hover:bg-emerald-700"
-                data-testid="copy-referral-btn"
-              >
-                Copiar
-              </Button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Custom Header with Background */}
+      <div 
+        className="relative h-64 bg-cover bg-center"
+        style={{
+          backgroundImage: `linear-gradient(rgba(6, 78, 59, 0.85), rgba(6, 78, 59, 0.85)), url('https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/2bb0237451801a9200f64aec0490e213f0ad235e63cc04bcc1bd2727fc1d3c7d.png')`
+        }}
+      >
+        {/* Logo and Menu */}
+        <div className="flex justify-between items-center p-4">
+          <div className="flex items-center gap-2">
+            <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center">
+              <span className="text-2xl">🌱</span>
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-2xl font-bold text-white">Wealth Farm</h1>
+          </div>
+          <div className="flex gap-3">
+            {user?.is_admin && (
+              <button
+                onClick={() => navigate('/admin')}
+                className="p-2 bg-white/20 rounded-full hover:bg-white/30"
+                data-testid="nav-admin-top"
+              >
+                <Shield className="h-5 w-5 text-white" />
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/profile')}
+              className="p-2 bg-white/20 rounded-full hover:bg-white/30"
+              data-testid="nav-profile-top"
+            >
+              <UserIcon className="h-5 w-5 text-white" />
+            </button>
+            <button
+              onClick={onLogout}
+              className="p-2 bg-white/20 rounded-full hover:bg-white/30"
+              data-testid="logout-top"
+            >
+              <LogOut className="h-5 w-5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Balance Display */}
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-6">
+          <div className="text-white">
+            <p className="text-sm opacity-90 mb-1">Saldo Disponível</p>
+            <h2 className="text-5xl font-bold text-yellow-400">₹{balance.toFixed(2)}</h2>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 -mt-6" data-testid="dashboard-container">
+        
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <button
+            onClick={() => navigate('/deposits')}
+            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all flex flex-col items-center gap-3"
+            data-testid="deposits-nav-btn"
+          >
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+              <img 
+                src="https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/2132c09d2ead36dccbd4545fc18ec9709c58b1d4e11c8a875fa87c83f701f67f.png" 
+                alt="Recharge" 
+                className="w-10 h-10 object-contain"
+              />
+            </div>
+            <span className="font-semibold text-gray-800">Recarga</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/withdrawals')}
+            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all flex flex-col items-center gap-3"
+            data-testid="withdrawals-nav-btn"
+          >
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center">
+              <DollarSign className="h-8 w-8 text-white" />
+            </div>
+            <span className="font-semibold text-gray-800">Saque</span>
+          </button>
+        </div>
+
+        {/* Referral Bonus Banner */}
+        <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border-4 border-green-600 rounded-3xl p-6 mb-6 shadow-lg" data-testid="referral-card">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img 
+                src="https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/2132c09d2ead36dccbd4545fc18ec9709c58b1d4e11c8a875fa87c83f701f67f.png" 
+                alt="Bonus" 
+                className="w-20 h-20 object-contain"
+              />
+              <div>
+                <h3 className="text-3xl font-bold text-red-600 mb-1">₹10,00</h3>
+                <p className="text-sm text-gray-700 font-medium">
+                  Indique amigos e ganhe R$ 10 no<br/>primeiro depósito de R$ 30!
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(referralLink);
+                toast.success('Link copiado!');
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg"
+              data-testid="copy-referral-btn"
+            >
+              Compartilhar
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards - Income and Tasks */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {/* Pending Income Card */}
+          <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-3xl p-6 shadow-lg text-white" data-testid="earnings-card">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-medium opacity-90">Rendimentos Pendentes</h3>
+                <p className="text-3xl font-bold text-yellow-300 mt-2">+₹{totalCurrentEarnings.toFixed(2)}</p>
+              </div>
+              <img 
+                src="https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/ac20397c9d885ef8fa9805deaf50f03e41e457620f3132c0357a8fe11e7b58bf.png" 
+                alt="Growth" 
+                className="w-20 h-20 object-contain"
+              />
+            </div>
+            <button
+              onClick={() => navigate('/my-lots')}
+              className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-full font-semibold w-full"
+              data-testid="receive-earnings-btn"
+            >
+              Retirar
+            </button>
+          </div>
+
+          {/* Total Invested Card */}
+          <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-3xl p-6 shadow-lg text-white" data-testid="invested-card">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-medium opacity-90">Total Investido</h3>
+                <p className="text-3xl font-bold text-yellow-300 mt-2">₹{totalInvested.toFixed(2)}</p>
+                <p className="text-sm opacity-80 mt-1">{activeLots.length} lotes ativos</p>
+              </div>
+              <div className="bg-white/20 p-3 rounded-2xl">
+                <TrendingUp className="w-12 h-12" />
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/my-lots')}
+              className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-full font-semibold w-full"
+              data-testid="view-lots-btn"
+            >
+              Ver Meus Lotes
+            </button>
+          </div>
+        </div>
 
         {/* Investment Packages */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-emerald-900 mb-6">Pacotes de Investimento</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 px-2">Pacotes de Investimento</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {lotPrices.map((lot) => (
-              <Card key={lot.type} className="border-emerald-200 shadow-lg hover:shadow-xl transition-all" data-testid={`lot-${lot.type}-card`}>
-                <CardHeader className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-t-lg">
-                  <CardTitle className="text-2xl">Lote {lot.type}</CardTitle>
+              <Card key={lot.type} className="border-2 border-green-200 shadow-xl hover:shadow-2xl transition-all overflow-hidden" data-testid={`lot-${lot.type}-card`}>
+                <CardHeader className="bg-gradient-to-br from-green-600 to-emerald-700 text-white p-6">
+                  <CardTitle className="text-2xl flex items-center justify-between">
+                    <span>Lote {lot.type}</span>
+                    <span className="text-yellow-300">🌾</span>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-6 space-y-4">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-emerald-900">R$ {lot.price.toFixed(2)}</div>
-                    <div className="text-sm text-emerald-600 mt-2">Investimento</div>
+                <CardContent className="pt-6 space-y-4 bg-gradient-to-b from-green-50 to-white">
+                  <div className="text-center py-4 bg-white rounded-2xl shadow-inner">
+                    <div className="text-4xl font-bold text-green-700">₹{lot.price.toFixed(2)}</div>
+                    <div className="text-sm text-gray-600 mt-1">Investimento</div>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-emerald-700">Rendimento/hora:</span>
-                      <span className="font-semibold text-emerald-900">R$ {lot.hourly_rate.toFixed(2)}</span>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between p-3 bg-yellow-50 rounded-lg">
+                      <span className="text-gray-700">Rendimento/hora:</span>
+                      <span className="font-bold text-green-700">₹{lot.hourly_rate.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-emerald-700">Duração:</span>
-                      <span className="font-semibold text-emerald-900">{lot.duration_days} dias</span>
+                    <div className="flex justify-between p-3 bg-green-50 rounded-lg">
+                      <span className="text-gray-700">Duração:</span>
+                      <span className="font-bold text-green-700">{lot.duration_days} dias</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-emerald-700">Retorno total:</span>
-                      <span className="font-semibold text-emerald-900">R$ {lot.total_return.toFixed(2)}</span>
+                    <div className="flex justify-between p-3 bg-emerald-50 rounded-lg">
+                      <span className="text-gray-700">Retorno total:</span>
+                      <span className="font-bold text-green-700">₹{lot.total_return.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between border-t border-emerald-200 pt-2">
-                      <span className="text-emerald-700 font-medium">Lucro:</span>
-                      <span className="font-bold text-emerald-600">R$ {(lot.total_return - lot.price).toFixed(2)}</span>
+                    <div className="flex justify-between p-4 bg-gradient-to-r from-yellow-100 to-yellow-50 rounded-lg border-2 border-yellow-300">
+                      <span className="text-gray-800 font-semibold">💰 Lucro:</span>
+                      <span className="font-bold text-green-600 text-lg">₹{(lot.total_return - lot.price).toFixed(2)}</span>
                     </div>
                   </div>
                   <Button
                     onClick={() => handlePurchaseLot(lot.type)}
                     disabled={loading || balance < lot.price}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-12 font-semibold"
+                    className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 h-14 font-bold text-lg shadow-lg"
                     data-testid={`purchase-lot-${lot.type}-btn`}
                   >
-                    {balance < lot.price ? 'Saldo Insuficiente' : 'Comprar Lote'}
+                    {balance < lot.price ? 'Saldo Insuficiente' : 'Comprar Agora'}
                   </Button>
                 </CardContent>
               </Card>
@@ -188,29 +266,59 @@ export default function Dashboard({ user, onLogout }) {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Button
-            onClick={() => navigate('/deposits')}
-            className="h-20 text-lg bg-emerald-600 hover:bg-emerald-700 shadow-lg"
-            data-testid="deposits-nav-btn"
-          >
-            <DollarSign className="mr-2 h-6 w-6" />
-            Fazer Depósito
-          </Button>
-          <Button
-            onClick={() => navigate('/my-lots')}
-            className="h-20 text-lg bg-teal-600 hover:bg-teal-700 shadow-lg"
-            data-testid="my-lots-nav-btn"
-          >
-            <Package className="mr-2 h-6 w-6" />
-            Meus Lotes
-          </Button>
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+          <div className="max-w-lg mx-auto px-4 py-3">
+            <div className="grid grid-cols-5 gap-2">
+              <button
+                onClick={() => navigate('/')}
+                className="flex flex-col items-center gap-1 text-green-600"
+                data-testid="nav-home-bottom"
+              >
+                <div className="p-2 bg-green-100 rounded-full">
+                  <Wallet className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-medium">Início</span>
+              </button>
+              <button
+                onClick={() => navigate('/deposits')}
+                className="flex flex-col items-center gap-1 text-gray-500 hover:text-green-600"
+                data-testid="nav-deposits-bottom"
+              >
+                <DollarSign className="h-6 w-6" />
+                <span className="text-xs">Recarga</span>
+              </button>
+              <button
+                onClick={() => navigate('/my-lots')}
+                className="flex flex-col items-center gap-1 text-gray-500 hover:text-green-600"
+                data-testid="nav-lots-bottom"
+              >
+                <ShoppingBag className="h-6 w-6" />
+                <span className="text-xs">Lotes</span>
+              </button>
+              <button
+                onClick={() => navigate('/withdrawals')}
+                className="flex flex-col items-center gap-1 text-gray-500 hover:text-green-600"
+                data-testid="nav-withdrawals-bottom"
+              >
+                <TrendingUp className="h-6 w-6" />
+                <span className="text-xs">Saque</span>
+              </button>
+              <button
+                onClick={() => navigate('/profile')}
+                className="flex flex-col items-center gap-1 text-gray-500 hover:text-green-600"
+                data-testid="nav-profile-bottom"
+              >
+                <UserIcon className="h-6 w-6" />
+                <span className="text-xs">Perfil</span>
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* Spacing for bottom nav */}
+        <div className="h-20"></div>
       </div>
     </div>
   );
 }
-
-// Import Input
-import { Input } from '@/components/ui/input';
