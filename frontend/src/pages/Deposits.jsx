@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import Navigation from '@/components/Navigation';
-import { Upload, Copy, QrCode } from 'lucide-react';
+import BottomNav from '@/components/BottomNav';
+import { Copy, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Deposits({ user, onLogout }) {
   const [amount, setAmount] = useState('');
@@ -14,6 +15,8 @@ export default function Deposits({ user, onLogout }) {
   const [deposits, setDeposits] = useState([]);
   const [pixConfig, setPixConfig] = useState({ pix_code: '', recipient_name: '' });
   const [loading, setLoading] = useState(false);
+  const [showPixCode, setShowPixCode] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDeposits();
@@ -38,6 +41,14 @@ export default function Deposits({ user, onLogout }) {
     }
   };
 
+  const handleShowPixCode = () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error('Digite um valor válido');
+      return;
+    }
+    setShowPixCode(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,6 +61,7 @@ export default function Deposits({ user, onLogout }) {
       toast.success('Solicitação de depósito enviada!');
       setAmount('');
       setProofUrl('');
+      setShowPixCode(false);
       fetchDeposits();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erro ao enviar solicitação');
@@ -74,131 +86,160 @@ export default function Deposits({ user, onLogout }) {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-100">
-      <Navigation user={user} onLogout={onLogout} />
-      
-      <div className="max-w-5xl mx-auto px-4 py-8" data-testid="deposits-container">
-        <h1 className="text-4xl font-bold text-emerald-900 mb-8">Depósitos</h1>
+  if (showPixCode) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-green-600 to-emerald-700 p-6 text-white">
+          <button onClick={() => setShowPixCode(false)} className="mb-4">
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+          <h1 className="text-2xl font-bold">Depositar R$ {parseFloat(amount).toFixed(2)}</h1>
+        </div>
 
-        {/* PIX Instructions */}
-        <Card className="mb-8 border-emerald-200 shadow-lg" data-testid="pix-instructions-card">
-          <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-t-lg">
-            <CardTitle className="flex items-center gap-2">
-              <QrCode className="h-6 w-6" />
-              Instruções para Depósito via PIX
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <div>
-              <Label className="text-emerald-900 font-semibold">1. Copie o código PIX abaixo:</Label>
-              <div className="flex gap-2 mt-2">
-                <Input 
-                  value={pixConfig.pix_code} 
-                  readOnly 
-                  className="flex-1 border-emerald-300 bg-emerald-50 font-mono text-xs"
-                  data-testid="pix-code-input"
+        <div className="max-w-lg mx-auto px-4 py-6" data-testid="pix-code-view">
+          {/* QR Code */}
+          <Card className="mb-6 border-2 border-green-200 shadow-lg">
+            <CardContent className="pt-6">
+              <div className="flex justify-center mb-4">
+                <img 
+                  src="https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/78040df5fe1f9b1a387d31518605b852d5bb766f4e1a14c0ee2385f4c653dbf3.png"
+                  alt="QR Code PIX"
+                  className="w-64 h-64 border-4 border-gray-200 rounded-xl"
                 />
-                <Button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(pixConfig.pix_code);
-                    toast.success('Código PIX copiado!');
-                  }}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                  data-testid="copy-pix-btn"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
               </div>
-              <p className="text-sm text-emerald-700 mt-2">Destinatário: <span className="font-semibold">{pixConfig.recipient_name}</span></p>
-            </div>
-            <div className="text-sm text-emerald-700 space-y-2">
-              <p><strong>2.</strong> Faça o pagamento via PIX no app do seu banco</p>
-              <p><strong>3.</strong> Tire um print/screenshot do comprovante</p>
-              <p><strong>4.</strong> Cole o link do comprovante abaixo e envie</p>
-              <p><strong>5.</strong> Aguarde a aprovação do administrador</p>
-            </div>
-          </CardContent>
-        </Card>
+              <p className="text-center text-gray-600 text-sm">Escaneie o QR Code com o app do seu banco</p>
+            </CardContent>
+          </Card>
 
-        {/* Deposit Request Form */}
-        <Card className="mb-8 border-emerald-200 shadow-lg" data-testid="deposit-form-card">
+          {/* PIX Code */}
+          <Card className="mb-6 border-2 border-green-200 shadow-lg" data-testid="pix-code-card">
+            <CardHeader>
+              <CardTitle className="text-green-900 text-center">Código PIX Copia e Cola</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-gray-100 p-4 rounded-lg mb-4 break-all font-mono text-xs">
+                {pixConfig.pix_code}
+              </div>
+              <Button 
+                onClick={() => {
+                  navigator.clipboard.writeText(pixConfig.pix_code);
+                  toast.success('Código PIX copiado!');
+                }}
+                className="w-full bg-green-600 hover:bg-green-700 h-12 font-semibold"
+                data-testid="copy-pix-btn"
+              >
+                <Copy className="h-5 w-5 mr-2" />
+                Copiar Código
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Submit Proof */}
+          <Card className="mb-6 border-2 border-green-200 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-green-900">Enviar Comprovante</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="proof" className="text-gray-700">Link do Comprovante</Label>
+                  <Input
+                    id="proof"
+                    data-testid="proof-input"
+                    type="url"
+                    placeholder="Cole o link da imagem do comprovante"
+                    value={proofUrl}
+                    onChange={(e) => setProofUrl(e.target.value)}
+                    required
+                    className="border-green-300"
+                  />
+                  <p className="text-xs text-gray-500">Upload em: imgur.com, imgbb.com, etc</p>
+                </div>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 h-12 font-bold"
+                  data-testid="submit-deposit-btn"
+                >
+                  {loading ? 'Enviando...' : 'Enviar Comprovante'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        <BottomNav />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-green-600 to-emerald-700 p-6 text-white">
+        <button onClick={() => navigate('/')} className="mb-4">
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-3xl font-bold">Recarga</h1>
+        <p className="text-green-100 mt-1">Adicione saldo para investir</p>
+      </div>
+
+      <div className="max-w-lg mx-auto px-4 py-6" data-testid="deposits-container">
+        
+        {/* Deposit Amount Card */}
+        <Card className="mb-6 border-2 border-green-200 shadow-lg" data-testid="deposit-form-card">
           <CardHeader>
-            <CardTitle className="text-emerald-900">Solicitar Depósito</CardTitle>
+            <CardTitle className="text-green-900">Quanto deseja depositar?</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="amount" className="text-emerald-900">Valor (R$)</Label>
+                <Label htmlFor="amount" className="text-gray-700 text-lg">Valor (R$)</Label>
                 <Input
                   id="amount"
                   data-testid="amount-input"
                   type="number"
                   step="0.01"
                   min="1"
-                  placeholder="100.00"
+                  placeholder="0,00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  required
-                  className="border-emerald-300"
+                  className="border-green-300 text-2xl h-16 text-center font-bold"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="proof" className="text-emerald-900">Link do Comprovante</Label>
-                <Input
-                  id="proof"
-                  data-testid="proof-input"
-                  type="url"
-                  placeholder="https://..."
-                  value={proofUrl}
-                  onChange={(e) => setProofUrl(e.target.value)}
-                  required
-                  className="border-emerald-300"
-                />
-                <p className="text-xs text-emerald-600">Cole o link da imagem do comprovante (ex: imgur, imgbb, etc)</p>
               </div>
               <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-12 font-semibold"
-                data-testid="submit-deposit-btn"
+                onClick={handleShowPixCode}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 h-14 font-bold text-lg"
+                data-testid="continue-deposit-btn"
               >
-                <Upload className="mr-2 h-5 w-5" />
-                {loading ? 'Enviando...' : 'Enviar Solicitação'}
+                Continuar com PIX
               </Button>
-            </form>
+            </div>
           </CardContent>
         </Card>
 
         {/* Deposits History */}
-        <Card className="border-emerald-200 shadow-lg" data-testid="deposits-history-card">
+        <Card className="border-2 border-green-200 shadow-lg" data-testid="deposits-history-card">
           <CardHeader>
-            <CardTitle className="text-emerald-900">Histórico de Depósitos</CardTitle>
+            <CardTitle className="text-green-900">Histórico de Depósitos</CardTitle>
           </CardHeader>
           <CardContent>
             {deposits.length === 0 ? (
-              <p className="text-center text-emerald-700 py-8">Nenhum depósito ainda</p>
+              <p className="text-center text-gray-500 py-8">Nenhum depósito ainda</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {deposits.map((deposit) => (
-                  <div key={deposit.id} className="border border-emerald-200 rounded-lg p-4 hover:shadow-md transition-shadow" data-testid={`deposit-${deposit.id}`}>
+                  <div key={deposit.id} className="border border-green-200 rounded-xl p-4 bg-white" data-testid={`deposit-${deposit.id}`}>
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="text-2xl font-bold text-emerald-900">R$ {deposit.amount.toFixed(2)}</p>
-                        <p className="text-xs text-emerald-600">{new Date(deposit.created_at).toLocaleString('pt-BR')}</p>
+                        <p className="text-2xl font-bold text-green-900">R$ {deposit.amount.toFixed(2)}</p>
+                        <p className="text-xs text-gray-500">{new Date(deposit.created_at).toLocaleString('pt-BR')}</p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(deposit.status)}`} data-testid={`deposit-status-${deposit.id}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(deposit.status)}`} data-testid={`deposit-status-${deposit.id}`}>
                         {getStatusText(deposit.status)}
                       </span>
                     </div>
-                    <a 
-                      href={deposit.proof_image_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-sm text-emerald-600 hover:underline"
-                    >
-                      Ver comprovante
-                    </a>
                   </div>
                 ))}
               </div>
@@ -206,6 +247,8 @@ export default function Deposits({ user, onLogout }) {
           </CardContent>
         </Card>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

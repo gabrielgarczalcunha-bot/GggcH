@@ -105,7 +105,7 @@ export default function Dashboard({ user, onLogout }) {
         <div className="absolute bottom-0 left-0 right-0 px-6 pb-6">
           <div className="text-white">
             <p className="text-sm opacity-90 mb-1">Saldo Disponível</p>
-            <h2 className="text-5xl font-bold text-yellow-400">₹{balance.toFixed(2)}</h2>
+            <h2 className="text-5xl font-bold text-yellow-400">R$ {balance.toFixed(2)}</h2>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function Dashboard({ user, onLogout }) {
                 className="w-20 h-20 object-contain"
               />
               <div>
-                <h3 className="text-3xl font-bold text-red-600 mb-1">₹10,00</h3>
+                <h3 className="text-3xl font-bold text-red-600 mb-1">R$ 10,00</h3>
                 <p className="text-sm text-gray-700 font-medium">
                   Indique amigos e ganhe R$ 10 no<br/>primeiro depósito de R$ 30!
                 </p>
@@ -178,7 +178,7 @@ export default function Dashboard({ user, onLogout }) {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-medium opacity-90">Rendimentos Pendentes</h3>
-                <p className="text-3xl font-bold text-yellow-300 mt-2">+₹{totalCurrentEarnings.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-yellow-300 mt-2">+R$ {totalCurrentEarnings.toFixed(2)}</p>
               </div>
               <img 
                 src="https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/ac20397c9d885ef8fa9805deaf50f03e41e457620f3132c0357a8fe11e7b58bf.png" 
@@ -200,7 +200,7 @@ export default function Dashboard({ user, onLogout }) {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-medium opacity-90">Total Investido</h3>
-                <p className="text-3xl font-bold text-yellow-300 mt-2">₹{totalInvested.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-yellow-300 mt-2">R$ {totalInvested.toFixed(2)}</p>
                 <p className="text-sm opacity-80 mt-1">{activeLots.length} lotes ativos</p>
               </div>
               <div className="bg-white/20 p-3 rounded-2xl">
@@ -224,20 +224,20 @@ export default function Dashboard({ user, onLogout }) {
             {lotPrices.map((lot) => (
               <Card key={lot.type} className="border-2 border-green-200 shadow-xl hover:shadow-2xl transition-all overflow-hidden" data-testid={`lot-${lot.type}-card`}>
                 <CardHeader className="bg-gradient-to-br from-green-600 to-emerald-700 text-white p-6">
-                  <CardTitle className="text-2xl flex items-center justify-between">
-                    <span>Lote {lot.type}</span>
-                    <span className="text-yellow-300">🌾</span>
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-2xl">{lot.name}</CardTitle>
+                    <img src={lot.image} alt={lot.name} className="w-16 h-16 object-contain" />
+                  </div>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4 bg-gradient-to-b from-green-50 to-white">
                   <div className="text-center py-4 bg-white rounded-2xl shadow-inner">
-                    <div className="text-4xl font-bold text-green-700">₹{lot.price.toFixed(2)}</div>
+                    <div className="text-4xl font-bold text-green-700">R$ {lot.price.toFixed(2)}</div>
                     <div className="text-sm text-gray-600 mt-1">Investimento</div>
                   </div>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between p-3 bg-yellow-50 rounded-lg">
                       <span className="text-gray-700">Rendimento/hora:</span>
-                      <span className="font-bold text-green-700">₹{lot.hourly_rate.toFixed(2)}</span>
+                      <span className="font-bold text-green-700">R$ {lot.hourly_rate.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between p-3 bg-green-50 rounded-lg">
                       <span className="text-gray-700">Duração:</span>
@@ -245,11 +245,11 @@ export default function Dashboard({ user, onLogout }) {
                     </div>
                     <div className="flex justify-between p-3 bg-emerald-50 rounded-lg">
                       <span className="text-gray-700">Retorno total:</span>
-                      <span className="font-bold text-green-700">₹{lot.total_return.toFixed(2)}</span>
+                      <span className="font-bold text-green-700">R$ {lot.total_return.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between p-4 bg-gradient-to-r from-yellow-100 to-yellow-50 rounded-lg border-2 border-yellow-300">
                       <span className="text-gray-800 font-semibold">💰 Lucro:</span>
-                      <span className="font-bold text-green-600 text-lg">₹{(lot.total_return - lot.price).toFixed(2)}</span>
+                      <span className="font-bold text-green-600 text-lg">R$ {(lot.total_return - lot.price).toFixed(2)}</span>
                     </div>
                   </div>
                   <Button

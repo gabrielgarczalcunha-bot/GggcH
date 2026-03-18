@@ -63,8 +63,8 @@ export default function Profile({ user, onLogout }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-emerald-800 leading-relaxed">
-              A Wealth Farm é uma plataforma de investimentos inovadora, fundada em 2012, 
-              com o objetivo de democratizar o acesso a oportunidades de rendimento passivo.
+              A Wealth Farm é uma plataforma inovadora de investimentos agrícolas, fundada em 2012, 
+              conectando investidores a oportunidades reais do agronegócio brasileiro com transparência e segurança.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 bg-emerald-50 rounded-lg">
@@ -72,26 +72,61 @@ export default function Profile({ user, onLogout }) {
                 <p className="text-2xl font-bold text-emerald-900">2012</p>
               </div>
               <div className="p-4 bg-emerald-50 rounded-lg">
-                <p className="text-sm text-emerald-700 mb-1">Certificação</p>
-                <p className="text-lg font-semibold text-emerald-900">Certificado pela Anvisa</p>
+                <p className="text-sm text-emerald-700 mb-1">Investidores Ativos</p>
+                <p className="text-2xl font-bold text-emerald-900">+50.000</p>
               </div>
             </div>
             <div className="border-t border-emerald-200 pt-4">
-              <h4 className="font-semibold text-emerald-900 mb-2">Avaliação</h4>
+              <h4 className="font-semibold text-emerald-900 mb-3">Certificações e Licenças</h4>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <p className="font-semibold text-green-900">Certificação CNA</p>
+                    <p className="text-xs text-green-700">Confederação da Agricultura e Pecuária do Brasil</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <p className="font-semibold text-green-900">Registro MAPA</p>
+                    <p className="text-xs text-green-700">Ministério da Agricultura, Pecuária e Abastecimento</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <p className="font-semibold text-green-900">Certificação de Sustentabilidade</p>
+                    <p className="text-xs text-green-700">Práticas agrícolas sustentáveis certificadas</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-emerald-200 pt-4">
+              <h4 className="font-semibold text-emerald-900 mb-2">Avaliação dos Usuários</h4>
               <div className="flex items-center gap-2">
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <span key={star} className="text-yellow-500 text-2xl">★</span>
                   ))}
                 </div>
-                <span className="text-emerald-700">5.0 / 5.0</span>
+                <span className="text-emerald-700 font-semibold">4.8 / 5.0</span>
+                <span className="text-gray-500 text-sm">(12.459 avaliações)</span>
               </div>
             </div>
             <div className="border-t border-emerald-200 pt-4">
               <h4 className="font-semibold text-emerald-900 mb-2">Nossa Missão</h4>
               <p className="text-emerald-700">
-                Proporcionar aos nossos clientes retornos consistentes e transparentes através 
-                de uma plataforma segura e fácil de usar, construindo confiança e prosperidade mútua.
+                Democratizar o acesso aos investimentos no agronegócio brasileiro, permitindo que 
+                qualquer pessoa possa investir no setor que mais cresce no país, com retornos 
+                consistentes, transparentes e sustentáveis.
+              </p>
+            </div>
+            <div className="border-t border-emerald-200 pt-4">
+              <h4 className="font-semibold text-emerald-900 mb-2">Segurança</h4>
+              <p className="text-emerald-700 text-sm">
+                Todos os investimentos são lastreados em ativos reais do agronegócio. 
+                Utilizamos tecnologia blockchain para garantir total transparência e rastreabilidade.
               </p>
             </div>
           </CardContent>

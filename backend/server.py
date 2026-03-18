@@ -194,9 +194,9 @@ async def get_me(current_user: User = Depends(get_current_user)):
 async def get_lot_prices():
     return {
         'lots': [
-            {'type': 1, 'price': 30.0, 'hourly_rate': 0.10, 'total_return': 72.0, 'duration_days': 30},
-            {'type': 2, 'price': 100.0, 'hourly_rate': 0.35, 'total_return': 252.0, 'duration_days': 30},
-            {'type': 3, 'price': 300.0, 'hourly_rate': 1.05, 'total_return': 756.0, 'duration_days': 30}
+            {'type': 1, 'name': 'Porquinho Poupança', 'price': 30.0, 'hourly_rate': 0.10, 'total_return': 72.0, 'duration_days': 30, 'image': 'https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/e8da3c7d0435b7cf433ec59393eaafc3b4d4af30dbcf08adfdacdb4eea160acd.png'},
+            {'type': 2, 'name': 'Vaca Leiteira', 'price': 100.0, 'hourly_rate': 0.35, 'total_return': 252.0, 'duration_days': 30, 'image': 'https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/3dc1e923f57e6c18cba5dde33ad09f2f0cdf379a46fed39b03bea3d61f6b64b2.png'},
+            {'type': 3, 'name': 'Fazenda Completa', 'price': 300.0, 'hourly_rate': 1.05, 'total_return': 756.0, 'duration_days': 30, 'image': 'https://static.prod-images.emergentagent.com/jobs/c828b448-09dd-4e01-9208-f245ab52da70/images/fc5415fdee455300c66689886df01a7894da6e3171a2ea4d7107170f58eab07e.png'}
         ]
     }
 
