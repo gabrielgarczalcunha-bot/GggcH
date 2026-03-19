@@ -10,6 +10,7 @@ import Profile from '@/pages/Profile';
 import Deposits from '@/pages/Deposits';
 import Withdrawals from '@/pages/Withdrawals';
 import MyLots from '@/pages/MyLots';
+import Ads from '@/pages/Ads';
 import { Toaster } from '@/components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -80,6 +81,7 @@ function App() {
           <Route path="/deposits" element={user ? <Deposits user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
           <Route path="/withdrawals" element={user ? <Withdrawals user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
           <Route path="/my-lots" element={user ? <MyLots user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+          <Route path="/ads" element={user ? <Ads user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-center" richColors />

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Wallet, TrendingUp, Users, ShoppingBag, DollarSign, LogOut, User as UserIcon, Shield } from 'lucide-react';
+import { Wallet, TrendingUp, Users, ShoppingBag, DollarSign, LogOut, User as UserIcon, Shield, Tv } from 'lucide-react';
 
 export default function Dashboard({ user, onLogout }) {
   const [balance, setBalance] = useState(0);
@@ -151,6 +151,30 @@ export default function Dashboard({ user, onLogout }) {
             <span className="font-semibold text-gray-800">Saque</span>
           </button>
         </div>
+
+        {/* Watch Ads Banner */}
+        <button
+          onClick={() => navigate('/ads')}
+          className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 rounded-2xl p-5 mb-6 shadow-lg hover:shadow-xl transition-all relative overflow-hidden"
+          data-testid="ads-banner-btn"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                <Tv className="h-7 w-7 text-white" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-white font-bold text-lg">Assistir Anúncios</h3>
+                <p className="text-white/80 text-sm">Ganhe R$ 0,25 por anúncio!</p>
+              </div>
+            </div>
+            <div className="bg-white text-purple-600 px-4 py-2 rounded-full font-bold text-sm">
+              Até R$ 2,50/dia
+            </div>
+          </div>
+        </button>
 
         {/* Referral Bonus Banner */}
         <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border-4 border-green-600 rounded-3xl p-6 mb-6 shadow-lg" data-testid="referral-card">

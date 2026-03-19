@@ -53,6 +53,14 @@ class User(BaseModel):
     is_admin: bool = False
     created_at: str
 
+class AdView(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    user_id: str
+    reward: float
+    viewed_at: str
+    ip_address: Optional[str] = None
+
 class LotPurchase(BaseModel):
     lot_type: int  # 1, 2, or 3
 
@@ -531,6 +539,131 @@ async def get_pix_config():
     return {
         'pix_code': '00020101021126580014br.gov.bcb.pix0136223ed24f-4b1a-46fe-993c-10e16a2fb7935204000053039865802BR5918GABRIEL G DA CUNHA6006ESTEIO62070503***630454FB',
         'recipient_name': 'GABRIEL G DA CUNHA'
+    }
+
+# ============= ADS ROUTES =============
+
+@api_router.get("/ads/check-limit")
+async def check_ad_limit(current_user: User = Depends(get_current_user)):
+    # Check how many ads watched today
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    ads_today = await db.ad_views.count_documents({
+        'user_id': current_user.id,
+        'viewed_at': {'$gte': today_start.isoformat()}
+    })
+    
+    return {
+        'ads_watched_today': ads_today,
+        'limit': 10,
+        'remaining': max(0, 10 - ads_today),
+        'can_watch': ads_today < 10,
+        'reward_per_ad': 0.25
+    }
+
+@api_router.post("/ads/complete")
+async def complete_ad(current_user: User = Depends(get_current_user)):
+    # Check daily limit
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    ads_today = await db.ad_views.count_documents({
+        'user_id': current_user.id,
+        'viewed_at': {'$gte': today_start.isoformat()}
+    })
+    
+    if ads_today >= 10:
+        raise HTTPException(status_code=400, detail='Limite diário de anúncios atingido (10/10)')
+    
+    # Reward amount
+    reward = 0.25
+    
+    # Add reward to user balance
+    await db.users.update_one(
+        {'id': current_user.id},
+        {'$inc': {'balance': reward, 'total_earnings': reward}}
+    )
+    
+    # Record ad view
+    ad_view_doc = {
+        'id': str(uuid.uuid4()),
+        'user_id': current_user.id,
+        'reward': reward,
+        'viewed_at': datetime.now(timezone.utc).isoformat(),
+        'ip_address': None
+    }
+    
+    await db.ad_views.insert_one(ad_view_doc)
+    
+    # Get updated stats
+    new_ads_today = ads_today + 1
+    
+    return {
+        'message': 'Anúncio assistido com sucesso!',
+        'reward': reward,
+        'ads_watched_today': new_ads_today,
+        'remaining': max(0, 10 - new_ads_today),
+        'new_balance': (await db.users.find_one({'id': current_user.id}, {'_id': 0}))['balance']
+    }
+
+@api_router.get("/ads/history")
+async def get_ad_history(current_user: User = Depends(get_current_user)):
+    ads = await db.ad_views.find(
+        {'user_id': current_user.id}, 
+        {'_id': 0}
+    ).sort('viewed_at', -1).limit(50).to_list(50)
+    
+    total_earned = await db.ad_views.aggregate([
+        {'$match': {'user_id': current_user.id}},
+        {'$group': {'_id': None, 'total': {'$sum': '$reward'}}}
+    ]).to_list(1)
+    
+    return {
+        'ads': [AdView(**ad) for ad in ads],
+        'total_earned': total_earned[0]['total'] if total_earned else 0,
+        'total_ads_watched': len(ads)
+    }
+
+# ============= ADMIN ADS ROUTES =============
+
+@api_router.get("/admin/ads/stats")
+async def get_admin_ads_stats(admin: User = Depends(get_admin_user)):
+    # Total ads watched
+    total_ads = await db.ad_views.count_documents({})
+    
+    # Total rewards paid
+    total_rewards_pipeline = [
+        {'$group': {'_id': None, 'total': {'$sum': '$reward'}}}
+    ]
+    total_rewards = await db.ad_views.aggregate(total_rewards_pipeline).to_list(1)
+    
+    # Ads today
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    ads_today = await db.ad_views.count_documents({
+        'viewed_at': {'$gte': today_start.isoformat()}
+    })
+    
+    # Top viewers
+    top_viewers_pipeline = [
+        {'$group': {
+            '_id': '$user_id',
+            'total_ads': {'$sum': 1},
+            'total_earned': {'$sum': '$reward'}
+        }},
+        {'$sort': {'total_ads': -1}},
+        {'$limit': 10}
+    ]
+    top_viewers = await db.ad_views.aggregate(top_viewers_pipeline).to_list(10)
+    
+    # Get user info for top viewers
+    for viewer in top_viewers:
+        user = await db.users.find_one({'id': viewer['_id']}, {'_id': 0, 'phone': 1})
+        viewer['phone'] = user['phone'] if user else 'Unknown'
+    
+    return {
+        'total_ads_watched': total_ads,
+        'total_rewards_paid': total_rewards[0]['total'] if total_rewards else 0,
+        'ads_watched_today': ads_today,
+        'top_viewers': top_viewers
     }
 
 # Include router
