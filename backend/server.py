@@ -209,6 +209,16 @@ async def purchase_lot(data: LotPurchase, current_user: User = Depends(get_curre
     if data.lot_type not in lot_prices:
         raise HTTPException(status_code=400, detail='Invalid lot type')
     
+    # Check if user already has 2 active lots of this type
+    active_lots_of_type = await db.lots.count_documents({
+        'user_id': current_user.id,
+        'lot_type': data.lot_type,
+        'status': 'active'
+    })
+    
+    if active_lots_of_type >= 2:
+        raise HTTPException(status_code=400, detail=f'Você já possui 2 lotes ativos deste tipo. Limite máximo atingido.')
+    
     price = lot_prices[data.lot_type]
     hourly_rate = hourly_rates[data.lot_type]
     
@@ -293,10 +303,13 @@ async def withdraw_lot_earnings(lot_id: str, current_user: User = Depends(get_cu
         {'$inc': {'balance': lot['current_earnings'], 'total_earnings': lot['current_earnings']}}
     )
     
-    # Reset lot earnings
+    # Reset lot earnings but keep it active
+    # Only mark as completed if 30 days (720 hours) have passed
+    new_status = 'completed' if lot['hours_elapsed'] >= lot['total_hours'] else 'active'
+    
     await db.lots.update_one(
         {'id': lot_id},
-        {'$set': {'current_earnings': 0.0, 'status': 'withdrawn'}}
+        {'$set': {'current_earnings': 0.0, 'status': new_status}}
     )
     
     return {'message': 'Earnings withdrawn successfully', 'amount': lot['current_earnings']}

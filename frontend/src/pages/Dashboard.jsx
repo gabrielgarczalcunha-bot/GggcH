@@ -12,6 +12,7 @@ export default function Dashboard({ user, onLogout }) {
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [lots, setLots] = useState([]);
   const [lotPrices, setLotPrices] = useState([]);
+  const [lotCounts, setLotCounts] = useState({});
   const [referralStats, setReferralStats] = useState({ total_referrals: 0, total_earnings: 0 });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -28,11 +29,20 @@ export default function Dashboard({ user, onLogout }) {
         api.get('/lots/prices'),
         api.get('/referrals/stats')
       ]);
+      
+      // Count active lots by type
+      const activeLots = lotsRes.data.lots.filter(l => l.status === 'active');
+      const counts = {};
+      activeLots.forEach(lot => {
+        counts[lot.lot_type] = (counts[lot.lot_type] || 0) + 1;
+      });
+      
       setBalance(userRes.data.balance);
       setTotalEarnings(userRes.data.total_earnings);
       setLots(lotsRes.data.lots);
       setLotPrices(pricesRes.data.lots);
       setReferralStats(refRes.data);
+      setLotCounts(counts);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -272,48 +282,65 @@ export default function Dashboard({ user, onLogout }) {
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 px-2">Pacotes de Investimento</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {lotPrices.map((lot) => (
-              <Card key={lot.type} className="border-2 border-green-200 shadow-xl hover:shadow-2xl transition-all overflow-hidden" data-testid={`lot-${lot.type}-card`}>
-                <CardHeader className="bg-gradient-to-br from-green-600 to-emerald-700 text-white p-6">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-2xl">{lot.name}</CardTitle>
-                    <img src={lot.image} alt={lot.name} className="w-16 h-16 object-contain" />
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-4 bg-gradient-to-b from-green-50 to-white">
-                  <div className="text-center py-4 bg-white rounded-2xl shadow-inner">
-                    <div className="text-4xl font-bold text-green-700">R$ {lot.price.toFixed(2)}</div>
-                    <div className="text-sm text-gray-600 mt-1">Investimento</div>
-                  </div>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between p-3 bg-yellow-50 rounded-lg">
-                      <span className="text-gray-700">Rendimento/hora:</span>
-                      <span className="font-bold text-green-700">R$ {lot.hourly_rate.toFixed(2)}</span>
+            {lotPrices.map((lot) => {
+              const userActiveLots = lotCounts[lot.type] || 0;
+              const canPurchase = balance >= lot.price && userActiveLots < 2;
+              const buttonText = userActiveLots >= 2 
+                ? 'Limite Atingido (2/2)' 
+                : balance < lot.price 
+                  ? 'Saldo Insuficiente' 
+                  : 'Comprar Agora';
+              
+              return (
+                <Card key={lot.type} className="border-2 border-green-200 shadow-xl hover:shadow-2xl transition-all overflow-hidden" data-testid={`lot-${lot.type}-card`}>
+                  <CardHeader className="bg-gradient-to-br from-green-600 to-emerald-700 text-white p-6">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-2xl">{lot.name}</CardTitle>
+                      <img src={lot.image} alt={lot.name} className="w-16 h-16 object-contain" />
                     </div>
-                    <div className="flex justify-between p-3 bg-green-50 rounded-lg">
-                      <span className="text-gray-700">Duração:</span>
-                      <span className="font-bold text-green-700">{lot.duration_days} dias</span>
+                  </CardHeader>
+                  <CardContent className="pt-6 space-y-4 bg-gradient-to-b from-green-50 to-white">
+                    {userActiveLots > 0 && (
+                      <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3 text-center">
+                        <p className="font-semibold text-yellow-900">
+                          Você possui {userActiveLots}/2 lotes ativos
+                        </p>
+                      </div>
+                    )}
+                    <div className="text-center py-4 bg-white rounded-2xl shadow-inner">
+                      <div className="text-4xl font-bold text-green-700">R$ {lot.price.toFixed(2)}</div>
+                      <div className="text-sm text-gray-600 mt-1">Investimento</div>
                     </div>
-                    <div className="flex justify-between p-3 bg-emerald-50 rounded-lg">
-                      <span className="text-gray-700">Retorno total:</span>
-                      <span className="font-bold text-green-700">R$ {lot.total_return.toFixed(2)}</span>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between p-3 bg-yellow-50 rounded-lg">
+                        <span className="text-gray-700">Rendimento/hora:</span>
+                        <span className="font-bold text-green-700">R$ {lot.hourly_rate.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between p-3 bg-green-50 rounded-lg">
+                        <span className="text-gray-700">Duração:</span>
+                        <span className="font-bold text-green-700">{lot.duration_days} dias</span>
+                      </div>
+                      <div className="flex justify-between p-3 bg-emerald-50 rounded-lg">
+                        <span className="text-gray-700">Retorno total:</span>
+                        <span className="font-bold text-green-700">R$ {lot.total_return.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between p-4 bg-gradient-to-r from-yellow-100 to-yellow-50 rounded-lg border-2 border-yellow-300">
+                        <span className="text-gray-800 font-semibold">💰 Lucro:</span>
+                        <span className="font-bold text-green-600 text-lg">R$ {(lot.total_return - lot.price).toFixed(2)}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between p-4 bg-gradient-to-r from-yellow-100 to-yellow-50 rounded-lg border-2 border-yellow-300">
-                      <span className="text-gray-800 font-semibold">💰 Lucro:</span>
-                      <span className="font-bold text-green-600 text-lg">R$ {(lot.total_return - lot.price).toFixed(2)}</span>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => handlePurchaseLot(lot.type)}
-                    disabled={loading || balance < lot.price}
-                    className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 h-14 font-bold text-lg shadow-lg"
-                    data-testid={`purchase-lot-${lot.type}-btn`}
-                  >
-                    {balance < lot.price ? 'Saldo Insuficiente' : 'Comprar Agora'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    <Button
+                      onClick={() => handlePurchaseLot(lot.type)}
+                      disabled={loading || !canPurchase}
+                      className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 h-14 font-bold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid={`purchase-lot-${lot.type}-btn`}
+                    >
+                      {buttonText}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
